@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticket Box Villamar · Angelos agent — Tenerife Excursions & Watersports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;450;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<style>
+  /* ==========================================================
+     DESIGN TOKENS — refined dark / editorial / OpenAI-style
+     ========================================================== */
+  :root {
+    --bg: #0b0b0c;
+    --bg-elev: #131315;
+    --bg-elev-2: #1a1a1d;
+    --surface: #18181b;
+    --surface-hover: #1f1f23;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.16);
+    --text: #f5f5f4;
+    --text-dim: #a1a1aa;
+    --text-faint: #71717a;
+    --accent: #f59e0b;        /* amber — Tenerife sun */
+    --accent-2: #fb7185;      /* coral */
+    --accent-3: #38bdf8;      /* ocean */
+    --success: #34d399;
+    --whatsapp: #25d366;
+    --radius-sm: 8px;
+    --radius: 14px;
+    --radius-lg: 22px;
+    --radius-xl: 28px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow: 0 8px 30px rgba(0,0,0,0.35);
+    --shadow-lg: 0 30px 80px rgba(0,0,0,0.5);
+    --font-display: 'Fraunces', 'Times New Roman', serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Subtle ambient grain */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245,158,11,0.08), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(56,189,248,0.05), transparent 60%);
+  }
+
+  img { max-width: 100%; display: block; }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+
+  .container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 28px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ==========================================================
+     TOP NAV
+     ========================================================== */
+  .nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    background: rgba(11,11,12,0.65);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.3s ease;
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+  }
+  .brand-mark {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+    display: grid; place-items: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: #0b0b0c;
+    font-size: 15px;
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1; }
+  .brand-text .name { font-family: var(--font-display); font-weight: 600; font-size: 17px; letter-spacing: -0.01em; }
+  .brand-text .agent {
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .brand-mark span { transform: translateY(-1px); }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+  .nav-links a {
+    font-size: 14px;
+    color: var(--text-dim);
+    transition: color 0.2s ease;
+    font-weight: 450;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .lang-switch {
+    display: flex;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 3px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .lang-switch button {
+    padding: 6px 12px;
+    border-radius: 100px;
+    color: var(--text-faint);
+    transition: all 0.2s ease;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .lang-switch button.active {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .nav-cta {
+    background: var(--text);
+    color: var(--bg);
+    padding: 9px 18px;
+    border-radius: 100px;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .nav-cta:hover { transform: translateY(-1px); background: #fff; }
+
+  @media (max-width: 860px) {
+    .nav-links { display: none; }
+  }
+
+  /* ==========================================================
+     HERO
+     ========================================================== */
+  .hero {
+    padding: 160px 0 100px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    font-weight: 500;
+  }
+  .hero-eyebrow .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 4px rgba(52,211,153,0.15);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(52,211,153,0.15); }
+    50% { box-shadow: 0 0 0 8px rgba(52,211,153,0.05); }
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(48px, 8vw, 92px);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    max-width: 980px;
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 300;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 60%, var(--accent-3) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-sub {
+    font-size: clamp(17px, 1.5vw, 20px);
+    color: var(--text-dim);
+    max-width: 580px;
+    margin-top: 28px;
+    line-height: 1.55;
+    font-weight: 400;
+  }
+
+  .hero-cta-row {
+    margin-top: 42px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 22px;
+    border-radius: 100px;
+    font-weight: 500;
+    font-size: 14.5px;
+    letter-spacing: -0.005em;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .btn-primary:hover {
+    background: #fff;
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: var(--bg-elev);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover {
+    background: var(--bg-elev-2);
+    border-color: var(--border-strong);
+  }
+  .btn svg { width: 16px; height: 16px; }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 80px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    max-width: 900px;
+  }
+  .hero-stat-num {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    color: var(--text);
+  }
+  .hero-stat-label {
+    font-size: 13px;
+    color: var(--text-faint);
+    margin-top: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+
+  @media (max-width: 720px) {
+    .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
+  }
+
+  /* ==========================================================
+     SECTION HEADER
+     ========================================================== */
+  section { position: relative; z-index: 2; }
+  .section { padding: 100px 0; }
+  .section-head { margin-bottom: 56px; max-width: 700px; }
+  .section-eyebrow {
+    font-size: 12.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(34px, 5vw, 56px);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+  .section-sub {
+    color: var(--text-dim);
+    font-size: 17px;
+    margin-top: 18px;
+    max-width: 580px;
+  }
+
+  /* ==========================================================
+     EXCURSIONS GRID — refined cards
+     ========================================================== */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 40px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    padding: 9px 16px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .filter-chip:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .filter-chip.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  .excursions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .ex-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .ex-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-strong);
+  }
+  .ex-card:hover .ex-img img {
+    transform: scale(1.06);
+  }
+  .ex-img {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    position: relative;
+    background: var(--bg-elev-2);
+  }
+  .ex-img img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  }
+  .ex-badge {
+    position: absolute;
+    top: 14px; left: 14px;
+    background: rgba(11,11,12,0.85);
+    backdrop-filter: blur(10px);
+    color: var(--text);
+    padding: 6px 11px;
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+  }
+  .ex-fav {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 36px; height: 36px;
+    background: rgba(11,11,12,0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease;
+  }
+  .ex-fav:hover { background: rgba(245,158,11,0.2); }
+  .ex-fav svg { width: 16px; height: 16px; stroke: var(--text); fill: none; stroke-width: 2; }
+
+  .ex-body { padding: 20px 22px 22px; flex: 1; display: flex; flex-direction: column; }
+  .ex-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .ex-meta .sep { width: 3px; height: 3px; background: var(--text-faint); border-radius: 50%; }
+  .ex-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: -0.018em;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .ex-desc {
+    color: var(--text-dim);
+    font-size: 14.5px;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    flex: 1;
+  }
+  .ex-foot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+  .ex-price-from {
+    font-size: 11.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .ex-price {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    margin-top: 2px;
+  }
+  .ex-price-currency {
+    font-size: 16px;
+    color: var(--text-dim);
+    margin-left: 1px;
+  }
+  .ex-book-arrow {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--bg);
+    display: grid; place-items: center;
+    transition: transform 0.3s ease;
+  }
+  .ex-card:hover .ex-book-arrow { transform: translate(2px, -2px) rotate(-15deg); }
+  .ex-book-arrow svg { width: 16px; height: 16px; }
+
+  /* ==========================================================
+     WHY SECTION
+     ========================================================== */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .why-cell {
+    background: var(--bg-elev);
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    transition: background 0.3s ease;
+  }
+  .why-cell:hover { background: var(--bg-elev-2); }
+  .why-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,113,133,0.1));
+    border: 1px solid rgba(245,158,11,0.2);
+    display: grid; place-items: center;
+    color: var(--accent);
+  }
+  .why-icon svg { width: 22px; height: 22px; }
+  .why-cell h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: -0.018em;
+  }
+  .why-cell p { color: var(--text-dim); font-size: 14.5px; line-height: 1.55; }
+  @media (max-width: 860px) { .why-grid { grid-template-columns: 1fr; } }
+
+  /* ==========================================================
+     MAP SECTION
+     ========================================================== */
+  .map-wrap {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-elev);
+  }
+  #tenerifeMap {
+    width: 100%;
+    height: 560px;
+    background: var(--bg-elev-2);
+  }
+  .map-legend {
+    position: absolute;
+    top: 20px; left: 20px;
+    background: rgba(11,11,12,0.85);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    font-size: 13px;
+    z-index: 500;
+    max-width: 240px;
+  }
+  .map-legend h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .map-legend p { color: var(--text-dim); font-size: 12.5px; line-height: 1.5; }
+
+  /* Leaflet overrides for dark theme */
+  .leaflet-container { background: var(--bg-elev-2); font-family: var(--font-body); }
+  .leaflet-popup-content-wrapper {
+    background: var(--bg-elev);
+    color: var(--text);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-lg);
+  }
+  .leaflet-popup-tip { background: var(--bg-elev); border: 1px solid var(--border-strong); }
+  .leaflet-popup-content { margin: 14px 16px; font-size: 13px; }
+  .leaflet-popup-content strong {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 15px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .leaflet-popup-close-button { color: var(--text-dim) !important; }
+  .leaflet-control-zoom a {
+    background: var(--bg-elev) !important;
+    color: var(--text) !important;
+    border: 1px solid var(--border) !important;
+  }
+  .leaflet-control-attribution {
+    background: rgba(11,11,12,0.6) !important;
+    color: var(--text-faint) !important;
+  }
+  .leaflet-control-attribution a { color: var(--text-dim) !important; }
+  .custom-marker {
+    background: var(--accent);
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent), 0 4px 12px rgba(245,158,11,0.5);
+  }
+
+  /* ==========================================================
+     TESTIMONIALS
+     ========================================================== */
+  .testi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .testi {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px 30px;
+    transition: border-color 0.3s ease;
+  }
+  .testi:hover { border-color: var(--border-strong); }
+  .testi-stars { color: var(--accent); font-size: 13px; letter-spacing: 2px; margin-bottom: 16px; }
+  .testi-quote {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-style: italic;
+    font-size: 19px;
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+  .testi-author { display: flex; align-items: center; gap: 12px; }
+  .testi-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--bg-elev-2);
+    object-fit: cover;
+    border: 1px solid var(--border);
+  }
+  .testi-name { font-size: 14px; font-weight: 500; }
+  .testi-loc { font-size: 12.5px; color: var(--text-faint); }
+  @media (max-width: 860px) { .testi-grid { grid-template-columns: 1fr; } }
+
+  /* ==========================================================
+     CAR RENTAL CTA
+     ========================================================== */
+  .car-cta {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+  }
+  .car-cta-img {
+    height: 100%;
+    min-height: 380px;
+    background-size: cover;
+    background-position: center;
+  }
+  .car-cta-body {
+    padding: 56px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .car-cta-body .section-eyebrow { color: var(--accent); }
+  .car-cta-body h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(28px, 3.5vw, 40px);
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin-bottom: 14px;
+  }
+  .car-cta-body p { color: var(--text-dim); font-size: 15.5px; margin-bottom: 28px; }
+  .car-price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 28px; }
+  .car-price-from { font-size: 12.5px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; }
+  .car-price-num { font-family: var(--font-display); font-size: 44px; font-weight: 500; letter-spacing: -0.025em; }
+  .car-price-unit { color: var(--text-dim); font-size: 15px; }
+  .btn-whatsapp {
+    background: var(--whatsapp);
+    color: #fff;
+    align-self: flex-start;
+  }
+  .btn-whatsapp:hover { background: #1ea952; transform: translateY(-1px); }
+  @media (max-width: 860px) {
+    .car-cta { grid-template-columns: 1fr; }
+    .car-cta-img { min-height: 240px; }
+    .car-cta-body { padding: 40px 28px; }
+  }
+
+  /* ==========================================================
+     FOOTER
+     ========================================================== */
+  footer {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 80px 0 40px;
+    margin-top: 80px;
+  }
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+  }
+  .foot-brand h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+  .foot-brand-tag {
+    font-family: var(--font-body);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: -10px;
+    margin-bottom: 14px;
+  }
+  .foot-brand p { color: var(--text-dim); font-size: 14px; max-width: 340px; line-height: 1.55; }
+  .foot-col h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .foot-contact-lead {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 16px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    margin-top: -8px;
+  }
+  .foot-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .foot-col li a { font-size: 14px; color: var(--text-dim); transition: color 0.2s ease; }
+  .foot-col li a:hover { color: var(--text); }
+  .foot-bottom {
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-faint);
+    font-size: 13px;
+  }
+  @media (max-width: 860px) {
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+    .foot-bottom { flex-direction: column; gap: 12px; text-align: center; }
+  }
+
+  /* ==========================================================
+     BOOKING MODAL
+     ========================================================== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.25s ease;
+  }
+  .modal-overlay.show { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--bg-elev);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 1080px;
+    max-height: 92vh;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 460px;
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .modal-media {
+    background: var(--bg-elev-2);
+    overflow-y: auto;
+    max-height: 92vh;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-media::-webkit-scrollbar { width: 6px; }
+  .modal-media::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+  .modal-hero-img {
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    object-fit: cover;
+  }
+  .modal-media-pad { padding: 20px 24px 28px; }
+  .modal-video {
+    margin-top: 16px;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .modal-video iframe { width: 100%; height: 100%; border: 0; }
+
+  .modal-form {
+    padding: 32px 36px 24px;
+    overflow-y: auto;
+    max-height: 92vh;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+  }
+  .modal-form::-webkit-scrollbar { width: 6px; }
+  .modal-form::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+
+  .modal-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    display: grid; place-items: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+  }
+  .modal-close:hover { background: var(--bg); border-color: var(--border-strong); }
+  .modal-close svg { width: 14px; height: 14px; }
+
+  .modal-eyebrow {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .modal-title {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 28px;
+    letter-spacing: -0.022em;
+    line-height: 1.1;
+    margin-bottom: 10px;
+    padding-right: 50px;
+  }
+  .modal-meta {
+    display: flex;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+  }
+  .modal-meta span { display: inline-flex; align-items: center; gap: 5px; }
+  .modal-meta svg { width: 14px; height: 14px; opacity: 0.7; }
+
+  .form-label {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-faint);
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .form-group { margin-bottom: 24px; }
+
+  .input, .select {
+    width: 100%;
+    padding: 13px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 14.5px;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+  }
+  .input:focus, .select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .option-list { display: flex; flex-direction: column; gap: 8px; }
+  .option-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    -webkit-tap-highlight-color: rgba(245,158,11,0.2);
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  @media (hover: hover) {
+    .option-item:hover { border-color: var(--border-strong); }
+  }
+  .option-item:active {
+    transform: scale(0.98);
+    border-color: var(--accent);
+  }
+  .option-item.selected {
+    border-color: var(--accent);
+    background: rgba(245,158,11,0.06);
+  }
+  /* Make sure children don't intercept taps - inherit click to parent */
+  .option-info, .option-name, .option-desc, .option-price, .option-quote {
+    pointer-events: none;
+  }
+  .option-info { display: flex; flex-direction: column; gap: 2px; }
+  .option-name { font-size: 14.5px; font-weight: 500; }
+  .option-desc { font-size: 12.5px; color: var(--text-faint); }
+  .option-price { font-family: var(--font-display); font-size: 18px; font-weight: 500; }
+  .option-quote {
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    background: rgba(245,158,11,0.1);
+    border: 1px solid rgba(245,158,11,0.3);
+    padding: 5px 10px;
+    border-radius: 100px;
+    font-family: var(--font-body) !important;
+    font-weight: 600 !important;
+  }
+
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    width: fit-content;
+  }
+  .qty-control button {
+    width: 44px; height: 44px;
+    display: grid; place-items: center;
+    color: var(--text);
+    transition: background 0.2s ease;
+    font-size: 18px;
+  }
+  .qty-control button:hover { background: var(--bg-elev-2); }
+  .qty-control input {
+    width: 50px;
+    text-align: center;
+    background: transparent;
+    border: 0;
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .qty-control input::-webkit-outer-spin-button,
+  .qty-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  .total-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin: 24px 0 20px;
+  }
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .total-label { font-size: 13px; color: var(--text-dim); }
+  .total-amount {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+  }
+  .total-note { font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+
+  .btn-confirm {
+    width: 100%;
+    padding: 16px;
+    background: var(--whatsapp);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background 0.2s ease;
+  }
+  .btn-confirm:hover { background: #1ea952; }
+  .btn-confirm svg { width: 18px; height: 18px; }
+  .form-foot-note {
+    font-size: 12px;
+    color: var(--text-faint);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 880px) {
+    .modal-overlay { padding: 0; align-items: stretch; }
+    .modal {
+      display: block;
+      grid-template-columns: none;
+      max-height: 100vh;
+      max-height: 100dvh;
+      height: 100vh;
+      height: 100dvh;
+      border-radius: 0;
+      border: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .modal-media {
+      max-height: none;
+      overflow: visible;
+    }
+    .modal-hero-img { aspect-ratio: 16 / 10; }
+    .modal-form {
+      max-height: none;
+      overflow: visible;
+      padding: 24px 22px 32px;
+    }
+    .modal-title { font-size: 24px; padding-right: 44px; }
+    .modal-close {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 10;
+      background: rgba(11,11,12,0.9);
+      backdrop-filter: blur(10px);
+    }
+    .btn-confirm {
+      padding: 18px;
+      font-size: 16px;
+    }
+    .form-foot-note { padding-bottom: 8px; }
+  }
+
+  /* ==========================================================
+     SCROLL REVEAL
+     ========================================================== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* Loading skeleton for cards */
+  .ex-card.skeleton .ex-img { background: linear-gradient(90deg, var(--bg-elev) 0%, var(--bg-elev-2) 50%, var(--bg-elev) 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+</style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="brand">
+      <div class="brand-mark"><span>T</span></div>
+      <div class="brand-text">
+        <span class="name" data-i18n="brand">Ticket Box Villamar</span>
+        <span class="agent" data-i18n="brand.agent">Angelos agent</span>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="#excursions" data-i18n="nav.excursions">Excursions</a>
+      <a href="#map" data-i18n="nav.map">Map</a>
+      <a href="#why" data-i18n="nav.why">Why us</a>
+      <a href="#car" data-i18n="nav.car">Car rental</a>
+      <a href="#contact" data-i18n="nav.contact">Contact</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang-switch">
+        <button data-lang="en" class="active">EN</button>
+        <button data-lang="fr">FR</button>
+        <button data-lang="es">ES</button>
+      </div>
+      <a class="nav-cta" href="https://wa.me/34635999635" target="_blank" data-i18n="nav.cta">Book on WhatsApp</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      <span data-i18n="hero.eyebrow">Available today · 4.9 ★ from 2,847 travellers</span>
+    </div>
+    <h1>
+      <span data-i18n="hero.title1">The island of</span>
+      <em data-i18n="hero.title2">eternal spring</em>,
+      <br>
+      <span data-i18n="hero.title3">on your terms.</span>
+    </h1>
+    <p class="hero-sub" data-i18n="hero.sub">
+      Hand-picked excursions, watersports and private experiences in Tenerife — booked in seconds, confirmed on WhatsApp, run by a local team you can trust.
+    </p>
+    <div class="hero-cta-row">
+      <a href="#excursions" class="btn btn-primary" data-i18n="hero.cta1">
+        Browse experiences
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#map" class="btn btn-secondary" data-i18n="hero.cta2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        See the map
+      </a>
+    </div>
+
+    <div class="hero-stats">
+      <div>
+        <div class="hero-stat-num">14</div>
+        <div class="hero-stat-label" data-i18n="stats.experiences">Experiences</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">2,847</div>
+        <div class="hero-stat-label" data-i18n="stats.travellers">Happy travellers</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">12y</div>
+        <div class="hero-stat-label" data-i18n="stats.local">Local since 2012</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">4.9★</div>
+        <div class="hero-stat-label" data-i18n="stats.rating">Average rating</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ========== EXCURSIONS ========== -->
+<section class="section" id="excursions">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow" data-i18n="ex.eyebrow">14 experiences · curated</span>
+      <h2 class="section-title" data-i18n="ex.title">Excursions worth the flight.</h2>
+      <p class="section-sub" data-i18n="ex.sub">Hand-picked by our team of four local agents. Pick a date, choose your option, confirm on WhatsApp — it's that simple.</p>
+    </div>
+
+    <div class="filter-bar reveal">
+      <button class="filter-chip active" data-filter="all">All</button>
+      <button class="filter-chip" data-filter="sea" data-i18n="filter.sea">Sea & boats</button>
+      <button class="filter-chip" data-filter="watersports" data-i18n="filter.water">Watersports</button>
+      <button class="filter-chip" data-filter="land" data-i18n="filter.land">Land & mountain</button>
+      <button class="filter-chip" data-filter="air" data-i18n="filter.air">From the sky</button>
+      <button class="filter-chip" data-filter="family" data-i18n="filter.family">Family</button>
+    </div>
+
+    <div class="excursions-grid" id="excursionsGrid">
+      <!-- cards injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ========== MAP ========== -->
+<section class="section" id="map">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow" data-i18n="map.eyebrow">Departure points · live map</span>
+      <h2 class="section-title" data-i18n="map.title">Find your meeting point.</h2>
+      <p class="section-sub" data-i18n="map.sub">Every experience starts somewhere beautiful. Tap any pin to see the tour and get directions.</p>
+    </div>
+    <div class="map-wrap reveal">
+      <div class="map-legend">
+        <h4 data-i18n="map.legend.title">Tenerife · satellite</h4>
+        <p data-i18n="map.legend.text">Our experiences depart from south Tenerife — Costa Adeje, Los Cristianos, Las Galletas — and Puerto de la Cruz on the north coast.</p>
+      </div>
+      <div id="tenerifeMap"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== WHY US ========== -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow" data-i18n="why.eyebrow">The Ticket Box difference</span>
+      <h2 class="section-title" data-i18n="why.title">Built by locals.<br>Run with care.</h2>
+    </div>
+    <div class="why-grid reveal">
+      <div class="why-cell">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3 data-i18n="why.1.t">Real local expertise</h3>
+        <p data-i18n="why.1.p">Born and raised in Tenerife, our four agents know every cove, viewpoint and the best time to spot wildlife.</p>
+      </div>
+      <div class="why-cell">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 data-i18n="why.2.t">Safety, always</h3>
+        <p data-i18n="why.2.p">Every captain, pilot and guide is fully licensed. We carry full insurance and follow strict safety protocols on every trip.</p>
+      </div>
+      <div class="why-cell">
+        <div class="why-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.7 8.5l-9.7-6.5-9.7 6.5M3 11v9a1 1 0 001 1h16a1 1 0 001-1v-9"/></svg>
+        </div>
+        <h3 data-i18n="why.3.t">Easy WhatsApp booking</h3>
+        <p data-i18n="why.3.p">Reserve in seconds, get instant confirmation on WhatsApp. Personal service in 4 languages, every day of the year.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== CAR RENTAL ========== -->
+<section class="section" id="car">
+  <div class="container">
+    <div class="car-cta reveal">
+      <div class="car-cta-img" style="background-image:url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80')"></div>
+      <div class="car-cta-body">
+        <span class="section-eyebrow" data-i18n="car.eyebrow">Explore freely</span>
+        <h2 data-i18n="car.title">Rent a car. See more.</h2>
+        <p data-i18n="car.sub">Discover the island on your own terms with our modern, well-maintained fleet — managed personally by our team.</p>
+        <div class="car-price-row">
+          <span class="car-price-from" data-i18n="car.from">From</span>
+          <span class="car-price-num">34€</span>
+          <span class="car-price-unit" data-i18n="car.day">/ day</span>
+        </div>
+        <a href="https://wa.me/34635999635?text=Hi%20Angelo%2C%20I%27d%20like%20to%20rent%20a%20car%20with%20Ticket%20Box%20Villamar." target="_blank" class="btn btn-whatsapp">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <span data-i18n="car.cta">Reserve on WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TESTIMONIALS ========== -->
+<section class="section" id="reviews">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="section-eyebrow" data-i18n="testi.eyebrow">Real stories · real adventures</span>
+      <h2 class="section-title" data-i18n="testi.title">Loved by travellers, worldwide.</h2>
+    </div>
+    <div class="testi-grid reveal">
+      <div class="testi">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote" data-i18n="testi.1.q">"The whale-watching tour exceeded all expectations. The team picked the perfect day and we saw dozens of dolphins. Truly unforgettable."</p>
+        <div class="testi-author">
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100&q=80" class="testi-avatar" alt="">
+          <div>
+            <div class="testi-name">Julia & Mark Thompson</div>
+            <div class="testi-loc">🇬🇧 Manchester, UK · 2025</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote" data-i18n="testi.2.q">"Our paragliding tandem flight was the highlight of our honeymoon. Professional, safe and breathtaking views over the coast."</p>
+        <div class="testi-author">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100&q=80" class="testi-avatar" alt="">
+          <div>
+            <div class="testi-name">Carlos & Elena Rivera</div>
+            <div class="testi-loc">🇪🇸 Madrid, Spain · 2025</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote" data-i18n="testi.3.q">"Stargazing at Teide was magical. They know the best spots and made us feel like we were the only ones on the mountain. Five stars."</p>
+        <div class="testi-author">
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100&q=80" class="testi-avatar" alt="">
+          <div>
+            <div class="testi-name">Hans & Petra Müller</div>
+            <div class="testi-loc">🇩🇪 Berlin, Germany · 2025</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer id="contact">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <h3>Ticket Box Villamar</h3>
+        <p class="foot-brand-tag" data-i18n="foot.brand.tag">Angelos agent · since 2012</p>
+        <p data-i18n="foot.about">Premium excursions and watersports in Tenerife. Personally run by Angelo and his team of local agents who know every corner of this island.</p>
+      </div>
+      <div class="foot-col">
+        <h4 data-i18n="foot.explore">Explore</h4>
+        <ul>
+          <li><a href="#excursions" data-i18n="nav.excursions">Excursions</a></li>
+          <li><a href="#map" data-i18n="nav.map">Map</a></li>
+          <li><a href="#car" data-i18n="nav.car">Car rental</a></li>
+          <li><a href="#reviews" data-i18n="foot.reviews">Reviews</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4 data-i18n="foot.contact">Contact</h4>
+        <p class="foot-contact-lead" data-i18n="foot.contact.lead">Speak directly to Angelo</p>
+        <ul>
+          <li><a href="https://wa.me/34635999635">+34 635 99 96 35</a></li>
+          <li><a href="mailto:hello@ticketboxvillamar.com">hello@ticketboxvillamar.com</a></li>
+          <li><a>San Eugenio Bajo, Adeje</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4 data-i18n="foot.legal">Legal</h4>
+        <ul>
+          <li><a href="#" data-i18n="foot.terms">Terms</a></li>
+          <li><a href="#" data-i18n="foot.privacy">Privacy</a></li>
+          <li><a href="#" data-i18n="foot.cookies">Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Ticket Box Villamar · Angelos agent</span>
+      <span data-i18n="foot.made">Made with care in Tenerife · for travellers who deserve the best</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ========== BOOKING MODAL ========== -->
+<div class="modal-overlay" id="modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-media">
+      <img src="" id="modalHero" class="modal-hero-img" alt="">
+      <div class="modal-media-pad">
+        <div class="modal-video">
+          <iframe id="modalVideo" src="" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+    <div class="modal-form">
+      <button class="modal-close" id="modalClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="modal-eyebrow" data-i18n="modal.eyebrow">Book your adventure</div>
+      <h3 class="modal-title" id="modalTitle">—</h3>
+      <div class="modal-meta" id="modalMeta"></div>
+
+      <div class="form-group">
+        <label class="form-label" data-i18n="modal.option">Choose your option</label>
+        <div class="option-list" id="optionList"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" data-i18n="modal.date">Preferred date</label>
+        <input type="date" class="input" id="bookDate">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" data-i18n="modal.people">Number of participants</label>
+        <div class="qty-control">
+          <button id="qtyMinus" type="button">−</button>
+          <input type="number" id="bookQty" value="2" min="1" max="20">
+          <button id="qtyPlus" type="button">+</button>
+        </div>
+      </div>
+
+      <div class="total-box">
+        <div class="total-row">
+          <span class="total-label" data-i18n="modal.total">Estimated total</span>
+          <span class="total-amount" id="totalAmount">€0</span>
+        </div>
+        <div class="total-note" data-i18n="modal.note">Includes taxes · personal confirmation on WhatsApp</div>
+      </div>
+
+      <button class="btn-confirm" id="confirmBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        <span data-i18n="modal.confirm">Confirm via WhatsApp</span>
+      </button>
+      <p class="form-foot-note" data-i18n="modal.footnote">You'll receive availability and instructions on WhatsApp within minutes.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+/* ============================================================
+   DATA — 14 EXCURSIONS (placeholders, ready to swap)
+   When the user provides the real list, replace each entry below.
+   Each excursion has: id, slug, category, title, desc, img,
+   meta (duration), startPoint {name, lat, lng}, options [{name, desc, price}],
+   videoQuery (for YouTube embed search)
+   ============================================================ */
+const EXCURSIONS = [
+
+  /* ─── 1. WHALE & DOLPHIN WATCHING ─────────────────────── */
+  {
+    id: 1,
+    cat: 'sea',
+    title: { en: "Whale & Dolphin Watching", fr: "Observation des baleines et dauphins", es: "Avistamiento de ballenas y delfines" },
+    desc: {
+      en: "Spot pilot whales and bottlenose dolphins in their natural home, just minutes from shore.",
+      fr: "Observez les baleines pilotes et les grands dauphins dans leur habitat naturel, à quelques minutes de la côte.",
+      es: "Observa ballenas piloto y delfines mulares en su hábitat natural, a minutos de la costa."
+    },
+    img: "images/whale-watching.jpeg",
+    duration: { en: "2.5h · 3h · 4.5h", fr: "2h30 · 3h · 4h30", es: "2,5h · 3h · 4,5h" },
+    badge: { en: "Bestseller", fr: "Meilleure vente", es: "Más vendido" },
+    startPoint: { name: "Puerto Colón · Costa Adeje", lat: 28.0834, lng: -16.7402 },
+    options: [
+      { name: { en: "2.5h tour", fr: "Sortie 2h30", es: "Salida 2,5h" }, desc: { en: "Standard", fr: "Standard", es: "Estándar" }, price: 30 },
+      { name: { en: "3h tour", fr: "Sortie 3h", es: "Salida 3h" }, desc: { en: "Includes swim stop", fr: "Avec arrêt baignade", es: "Con parada para baño" }, price: 45 },
+      { name: { en: "4.5h tour", fr: "Sortie 4h30", es: "Salida 4,5h" }, desc: { en: "Premium · longer route", fr: "Premium · trajet plus long", es: "Premium · ruta más larga" }, price: 65 }
+    ],
+    videoId: "yifc2_Yj3_4"
+  },
+
+  /* ─── 2. PRIVATE BOAT CHARTER ─────────────────────────── */
+  {
+    id: 2,
+    cat: 'sea',
+    title: { en: "Private Boat Charter", fr: "Charter privé en bateau", es: "Charter privado en barco" },
+    desc: {
+      en: "Your group, your rules. Choose 3h, 6h or full day along the south-west coast — other options on request.",
+      fr: "Votre groupe, vos règles. Choisissez 3h, 6h ou journée complète sur la côte sud-ouest — autres options sur demande.",
+      es: "Tu grupo, tus reglas. Elige 3h, 6h o día completo por la costa suroeste — otras opciones bajo petición."
+    },
+    img: "images/private-charter.jpeg",
+    duration: { en: "3h · 6h · full day", fr: "3h · 6h · journée", es: "3h · 6h · día completo" },
+    badge: { en: "Premium", fr: "Premium", es: "Premium" },
+    startPoint: { name: "Puerto Colón · Costa Adeje", lat: 28.0834, lng: -16.7402 },
+    options: [
+      { name: { en: "3h charter", fr: "Charter 3h", es: "Charter 3h" }, desc: { en: "Up to 10 guests", fr: "Jusqu'à 10 personnes", es: "Hasta 10 personas" }, price: 320 },
+      { name: { en: "6h charter", fr: "Charter 6h", es: "Charter 6h" }, desc: { en: "Quote on request", fr: "Devis sur demande", es: "Presupuesto bajo petición" }, price: 0, quote: true },
+      { name: { en: "Full-day charter", fr: "Charter journée", es: "Charter día completo" }, desc: { en: "Quote on request", fr: "Devis sur demande", es: "Presupuesto bajo petición" }, price: 0, quote: true }
+    ],
+    videoId: "EMRPggX1vbs"
+  },
+
+  /* ─── 3. DEEP SEA FISHING ─────────────────────────────── */
+  {
+    id: 3,
+    cat: 'sea',
+    title: { en: "Deep Sea Fishing", fr: "Pêche en haute mer", es: "Pesca de altura" },
+    desc: {
+      en: "Hunt blue marlin, tuna and wahoo on a proper sport-fishing boat with experienced skippers.",
+      fr: "Marlin bleu, thon et wahoo sur un vrai bateau de pêche sportive avec capitaines expérimentés.",
+      es: "Marlin azul, atún y wahoo en un barco de pesca deportiva con capitanes expertos."
+    },
+    img: "images/deep-fishing.jpeg",
+    duration: { en: "Morning · midday · afternoon", fr: "Matin · midi · après-midi", es: "Mañana · mediodía · tarde" },
+    startPoint: { name: "Puerto Colón · Los Cristianos · Los Gigantes · Las Galletas", lat: 28.0481, lng: -16.7188 },
+    options: [
+      { name: { en: "Morning trip", fr: "Sortie matinée", es: "Salida mañana" }, desc: { en: "Best bite window", fr: "Meilleure période", es: "Mejor pesca" }, price: 85 },
+      { name: { en: "Midday / afternoon trip", fr: "Sortie midi / après-midi", es: "Salida mediodía / tarde" }, desc: { en: "Per person", fr: "Par personne", es: "Por persona" }, price: 85 }
+    ],
+    videoId: "fZGXv2ycgt0"
+  },
+
+  /* ─── 4. SANTA CRUZ · LA LAGUNA · ANAGA ───────────────── */
+  {
+    id: 4,
+    cat: 'land',
+    title: { en: "Santa Cruz · La Laguna · Anaga", fr: "Santa Cruz · La Laguna · Anaga", es: "Santa Cruz · La Laguna · Anaga" },
+    desc: {
+      en: "The capital, the UNESCO old town and the ancient laurel forest of Anaga — Tenerife's cultural triple crown.",
+      fr: "La capitale, la vieille ville classée UNESCO et l'ancienne forêt de lauriers d'Anaga — la triple couronne culturelle.",
+      es: "La capital, el casco antiguo Patrimonio de la UNESCO y la antigua laurisilva de Anaga — la triple corona cultural."
+    },
+    img: "images/anaga.jpeg",
+    duration: { en: "Full day · hotel pick-up", fr: "Journée · prise en charge hôtel", es: "Día completo · recogida en hotel" },
+    startPoint: { name: "Hotel pick-up · select hotels & pick-up points", lat: 28.4682, lng: -16.2546 },
+    options: [
+      { name: { en: "Group tour", fr: "Tour de groupe", es: "Tour grupo" }, desc: { en: "Pick-up + guide + transfer", fr: "Transfert + guide + retour", es: "Recogida + guía + traslado" }, price: 50 }
+    ],
+    videoId: "YmM8boaspTk"
+  },
+
+  /* ─── 5. TEIDE · ICOD · GARACHICO · MASCA ─────────────── */
+  {
+    id: 5,
+    cat: 'land',
+    title: { en: "Teide · Icod · Garachico · Masca", fr: "Teide · Icod · Garachico · Masca", es: "Teide · Icod · Garachico · Masca" },
+    desc: {
+      en: "The volcano, the thousand-year-old dragon tree, the lava-pool village and the wildest valley — all in one day.",
+      fr: "Le volcan, le dragonnier millénaire, le village aux piscines de lave et la vallée la plus sauvage — en une journée.",
+      es: "El volcán, el drago milenario, el pueblo de las piscinas de lava y el valle más salvaje — todo en un día."
+    },
+    img: "images/masca.jpeg",
+    duration: { en: "Full day · hotel pick-up", fr: "Journée · prise en charge hôtel", es: "Día completo · recogida en hotel" },
+    badge: { en: "Most loved", fr: "Très demandé", es: "Más reservado" },
+    startPoint: { name: "Hotel pick-up · select hotels & pick-up points", lat: 28.2724, lng: -16.6425 },
+    options: [
+      { name: { en: "Group tour", fr: "Tour de groupe", es: "Tour grupo" }, desc: { en: "Pick-up + guide + transfer", fr: "Transfert + guide + retour", es: "Recogida + guía + traslado" }, price: 50 }
+    ],
+    videoId: "BG24Y4llESo"
+  },
+
+  /* ─── 6. LA OROTAVA · CANDELARIA · GARACHICO · MASCA · TEIDE ─ */
+  {
+    id: 6,
+    cat: 'land',
+    title: { en: "La Orotava · Candelaria · Masca · Teide", fr: "La Orotava · Candelaria · Masca · Teide", es: "La Orotava · Candelaria · Masca · Teide" },
+    desc: {
+      en: "Colonial mansions, the Black Madonna, lava beaches and the highest peak in Spain. The grand north tour.",
+      fr: "Demeures coloniales, la Vierge Noire, plages de lave et le plus haut sommet d'Espagne. Le grand tour du nord.",
+      es: "Casonas coloniales, la Virgen Negra, playas de lava y el pico más alto de España. El gran tour del norte."
+    },
+    img: "images/teide.jpeg",
+    duration: { en: "Full day · hotel pick-up", fr: "Journée · prise en charge hôtel", es: "Día completo · recogida en hotel" },
+    startPoint: { name: "Hotel pick-up · select hotels & pick-up points", lat: 28.3893, lng: -16.5232 },
+    options: [
+      { name: { en: "Group tour", fr: "Tour de groupe", es: "Tour grupo" }, desc: { en: "Pick-up + guide + transfer", fr: "Transfert + guide + retour", es: "Recogida + guía + traslado" }, price: 50 }
+    ],
+    videoId: "6xjuGKX87lc"
+  },
+
+  /* ─── 7. BUGGY SAFARI ─────────────────────────────────── */
+  {
+    id: 7,
+    cat: 'land',
+    title: { en: "Buggy Safari", fr: "Safari en buggy", es: "Safari en buggy" },
+    desc: {
+      en: "Rip across the south coast or climb to the Teide foothills. Two routes, both unforgettable.",
+      fr: "Foncez le long de la côte sud ou montez aux contreforts du Teide. Deux itinéraires, tout aussi inoubliables.",
+      es: "Recorre la costa sur o sube a las faldas del Teide. Dos rutas, ambas inolvidables."
+    },
+    img: "images/buggy.jpeg",
+    duration: { en: "2h coastal · 3h Teide", fr: "2h côte · 3h Teide", es: "2h costa · 3h Teide" },
+    startPoint: { name: "Puerto Santiago · Las Américas · Vilaflor", lat: 28.2419, lng: -16.8367 },
+    options: [
+      { name: { en: "2h coastal route", fr: "Route côtière 2h", es: "Ruta costera 2h" }, desc: { en: "Per buggy (1–2 pax)", fr: "Par buggy (1–2 pers)", es: "Por buggy (1–2 pers)" }, price: 100 },
+      { name: { en: "3h Teide route", fr: "Route Teide 3h", es: "Ruta Teide 3h" }, desc: { en: "Per buggy (1–2 pax)", fr: "Par buggy (1–2 pers)", es: "Por buggy (1–2 pers)" }, price: 140 },
+      { name: { en: "+ Hotel pick-up", fr: "+ Prise en charge hôtel", es: "+ Recogida en hotel" }, desc: { en: "Optional add-on · extra fee", fr: "Optionnel · supplément", es: "Opcional · suplemento" }, price: 15, addon: true }
+    ],
+    videoId: "OVj5WjtqyL0"
+  },
+
+  /* ─── 8. JET SKI ADVENTURE ────────────────────────────── */
+  {
+    id: 8,
+    cat: 'watersports',
+    title: { en: "Jet Ski Adventure", fr: "Aventure en jet-ski", es: "Aventura en moto de agua" },
+    desc: {
+      en: "Race along hidden caves and turquoise bays. Choose 40 min, 1h or a full 2h coastal safari.",
+      fr: "Filez le long des grottes cachées et des baies turquoises. Choisissez 40 min, 1h ou un safari de 2h.",
+      es: "Recorre cuevas y bahías turquesa. Elige 40 min, 1h o un safari completo de 2h."
+    },
+    img: "images/jetski.jpeg",
+    duration: { en: "40 min · 1h · 2h", fr: "40 min · 1h · 2h", es: "40 min · 1h · 2h" },
+    startPoint: { name: "Puerto Colón · Los Cristianos · Los Gigantes · Las Galletas", lat: 28.0830, lng: -16.7398 },
+    options: [
+      { name: { en: "40 min ride", fr: "Sortie 40 min", es: "Salida 40 min" }, desc: { en: "Per jet ski (1–2 pax)", fr: "Par jet-ski (1–2 pers)", es: "Por moto (1–2 pers)" }, price: 80 },
+      { name: { en: "1h ride", fr: "Sortie 1h", es: "Salida 1h" }, desc: { en: "Per jet ski (1–2 pax)", fr: "Par jet-ski (1–2 pers)", es: "Por moto (1–2 pers)" }, price: 120 },
+      { name: { en: "2h safari", fr: "Safari 2h", es: "Safari 2h" }, desc: { en: "Per jet ski (1–2 pax)", fr: "Par jet-ski (1–2 pers)", es: "Por moto (1–2 pers)" }, price: 200 }
+    ],
+    videoId: "BSd7KIU-mbM"
+  },
+
+  /* ─── 9. KAYAK TOUR ───────────────────────────────────── */
+  {
+    id: 9,
+    cat: 'watersports',
+    title: { en: "Kayak Tour", fr: "Tour en kayak", es: "Tour en kayak" },
+    desc: {
+      en: "Paddle hidden coves, swim with turtles and snorkel volcanic reefs. Hotel pick-up available.",
+      fr: "Pagayez dans des criques cachées, nagez avec des tortues et explorez les récifs volcaniques. Prise en charge hôtel possible.",
+      es: "Navega en calas escondidas, nada con tortugas y haz snorkel en arrecifes volcánicos. Recogida en hotel disponible."
+    },
+    img: "images/kayak.webp",
+    duration: { en: "2–3h · with snorkel", fr: "2–3h · avec snorkeling", es: "2–3h · con snorkel" },
+    startPoint: { name: "Los Gigantes · Los Cristianos · Playa Paraíso", lat: 28.2470, lng: -16.8400 },
+    options: [
+      { name: { en: "Kayak + snorkel tour", fr: "Kayak + snorkeling", es: "Kayak + snorkel" }, desc: { en: "Per person", fr: "Par personne", es: "Por persona" }, price: 45 },
+      { name: { en: "+ Hotel pick-up", fr: "+ Prise en charge hôtel", es: "+ Recogida en hotel" }, desc: { en: "Optional add-on · extra fee", fr: "Optionnel · supplément", es: "Opcional · suplemento" }, price: 10, addon: true }
+    ],
+    videoId: "xXK5x-v7NQ0"
+  },
+
+  /* ─── 10. PARASAILING EXPERIENCE ──────────────────────── */
+  {
+    id: 10,
+    cat: 'watersports',
+    title: { en: "Parasailing Experience", fr: "Expérience parachute ascensionnel", es: "Experiencia parasailing" },
+    desc: {
+      en: "Lift above the Atlantic. The whole south coast at your feet — and you stay perfectly dry.",
+      fr: "Montez au-dessus de l'Atlantique. Toute la côte sud à vos pieds — et vous restez au sec.",
+      es: "Eleva sobre el Atlántico. Toda la costa sur a tus pies — sin mojarte."
+    },
+    img: "images/parasailing.jpg",
+    duration: { en: "10–15 min flight", fr: "Vol 10–15 min", es: "Vuelo 10–15 min" },
+    startPoint: { name: "Puerto Colón Marina · Costa Adeje", lat: 28.0838, lng: -16.7396 },
+    options: [
+      { name: { en: "Solo flight", fr: "Vol solo", es: "Vuelo individual" }, desc: { en: "1 person", fr: "1 personne", es: "1 persona" }, price: 60 },
+      { name: { en: "Tandem flight", fr: "Vol en tandem", es: "Vuelo tándem" }, desc: { en: "2 people", fr: "2 personnes", es: "2 personas" }, price: 100 },
+      { name: { en: "Triple flight", fr: "Vol triple", es: "Vuelo triple" }, desc: { en: "3 people", fr: "3 personnes", es: "3 personas" }, price: 140 }
+    ],
+    videoId: "1YsVNJ0UzfQ"
+  },
+
+  /* ─── 11. PARAGLIDING TANDEM ──────────────────────────── */
+  {
+    id: 11,
+    cat: 'air',
+    title: { en: "Paragliding Tandem", fr: "Parapente en tandem", es: "Parapente en tándem" },
+    desc: {
+      en: "Take off above Costa Adeje and ride the thermals. Hotel pick-up from Las Américas and La Caleta included.",
+      fr: "Décollez au-dessus de la Costa Adeje et planez sur les thermiques. Prise en charge à Las Américas et La Caleta incluse.",
+      es: "Despega sobre Costa Adeje y vuela en las térmicas. Recogida en Las Américas y La Caleta incluida."
+    },
+    img: "images/paragliding.jpeg",
+    duration: { en: "20–30 min in the air", fr: "Vol 20–30 min", es: "Vuelo 20–30 min" },
+    startPoint: { name: "Pick-up: Las Américas · La Caleta", lat: 28.1067, lng: -16.7717 },
+    options: [
+      { name: { en: "Tandem flight", fr: "Vol en tandem", es: "Vuelo tándem" }, desc: { en: "Includes pick-up", fr: "Prise en charge incluse", es: "Recogida incluida" }, price: 100 }
+    ],
+    videoId: "TsKBpeImC7w"
+  },
+
+  /* ─── 12. SELF-DRIVE BOAT RENTAL ──────────────────────── */
+  {
+    id: 12,
+    cat: 'sea',
+    title: { en: "Self-Drive Boat Rental", fr: "Location de bateau sans permis", es: "Alquiler de barco sin licencia" },
+    desc: {
+      en: "No licence needed. Take the wheel and explore the coast on your own — 1, 2 or 3 hours.",
+      fr: "Sans permis. Prenez la barre et explorez la côte par vous-même — 1, 2 ou 3 heures.",
+      es: "Sin licencia. Coge el timón y explora la costa por tu cuenta — 1, 2 o 3 horas."
+    },
+    img: "images/self-drive-boat.webp",
+    duration: { en: "1h · 2h · 3h", fr: "1h · 2h · 3h", es: "1h · 2h · 3h" },
+    startPoint: { name: "Puerto Colón · Costa Adeje", lat: 28.0834, lng: -16.7402 },
+    options: [
+      { name: { en: "1h rental", fr: "Location 1h", es: "Alquiler 1h" }, desc: { en: "Per boat (up to 5 pax)", fr: "Par bateau (jusqu'à 5 pers)", es: "Por barco (hasta 5 pers)" }, price: 70 },
+      { name: { en: "2h rental", fr: "Location 2h", es: "Alquiler 2h" }, desc: { en: "Per boat (up to 5 pax)", fr: "Par bateau (jusqu'à 5 pers)", es: "Por barco (hasta 5 pers)" }, price: 130 },
+      { name: { en: "3h rental", fr: "Location 3h", es: "Alquiler 3h" }, desc: { en: "Per boat (up to 5 pax)", fr: "Par bateau (jusqu'à 5 pers)", es: "Por barco (hasta 5 pers)" }, price: 180 }
+    ],
+    videoId: "HY4-W1N-aY4"
+  },
+
+  /* ─── 13. EVENING SHOW & DINNER ───────────────────────── */
+  {
+    id: 13,
+    cat: 'family',
+    title: { en: "Evening Show & Dinner", fr: "Spectacle et dîner du soir", es: "Cena con espectáculo" },
+    desc: {
+      en: "A full evening of live entertainment, music and dinner. Great for families, couples and groups.",
+      fr: "Une soirée complète de spectacle vivant, musique et dîner. Parfait en famille, en couple ou entre amis.",
+      es: "Una noche completa de espectáculo en vivo, música y cena. Perfecto para familias, parejas y grupos."
+    },
+    img: "images/dinner-show.jpeg",
+    duration: { en: "Evening · 3–4h", fr: "Soirée · 3–4h", es: "Noche · 3–4h" },
+    badge: { en: "Family", fr: "Famille", es: "Familia" },
+    startPoint: { name: "Costa Adeje · Las Américas venues", lat: 28.0700, lng: -16.7339 },
+    options: [
+      { name: { en: "Show + dinner · Adult", fr: "Spectacle + dîner · Adulte", es: "Espectáculo + cena · Adulto" }, desc: { en: "Per person", fr: "Par personne", es: "Por persona" }, price: 49 },
+      { name: { en: "Show + dinner · Child", fr: "Spectacle + dîner · Enfant", es: "Espectáculo + cena · Niño" }, desc: { en: "Ages 4–11", fr: "4 à 11 ans", es: "4 a 11 años" }, price: 30, addon: true }
+    ],
+    videoId: "61KxdOu7zCU"
+  },
+
+  /* ─── 14. STARGAZING TEIDE ────────────────────────────── */
+  {
+    id: 14,
+    cat: 'land',
+    title: { en: "Stargazing Teide", fr: "Observation des étoiles au Teide", es: "Observación de estrellas en el Teide" },
+    desc: {
+      en: "UNESCO-protected skies. Sunset over the volcano, then a billion stars through professional telescopes. Hotel pick-up included.",
+      fr: "Ciels protégés par l'UNESCO. Coucher de soleil sur le volcan, puis un milliard d'étoiles à travers des télescopes professionnels. Prise en charge à l'hôtel incluse.",
+      es: "Cielos protegidos por la UNESCO. Atardecer sobre el volcán y un millón de estrellas con telescopios profesionales. Recogida en hotel incluida."
+    },
+    img: "images/teide.jpeg",
+    duration: { en: "Evening · 6–7h · hotel pick-up", fr: "Soirée · 6–7h · prise en charge hôtel", es: "Noche · 6–7h · recogida en hotel" },
+    badge: { en: "Top rated", fr: "Très bien noté", es: "Mejor valorada" },
+    startPoint: { name: "Hotel pick-up · Teide National Park", lat: 28.2724, lng: -16.6425 },
+    options: [
+      { name: { en: "Stargazing tour", fr: "Tour des étoiles", es: "Tour de estrellas" }, desc: { en: "Adult · pick-up + guide", fr: "Adulte · prise en charge + guide", es: "Adulto · recogida + guía" }, price: 75 }
+    ],
+    videoId: "Audje4Q7i94"
+  }
+
+];
+
+/* ============================================================
+   I18N
+   ============================================================ */
+const I18N = {
+  en: {
+    "brand": "Ticket Box Villamar",
+    "brand.agent": "Angelos agent",
+    "nav.excursions": "Excursions",
+    "nav.map": "Map",
+    "nav.why": "Why us",
+    "nav.car": "Car rental",
+    "nav.contact": "Contact",
+    "nav.cta": "Book on WhatsApp",
+    "hero.eyebrow": "Available today · 4.9 ★ from 2,847 travellers",
+    "hero.title1": "The island of",
+    "hero.title2": "eternal spring",
+    "hero.title3": "on your terms.",
+    "hero.sub": "Hand-picked excursions, watersports and private experiences in Tenerife — booked in seconds, confirmed on WhatsApp, run by a local team you can trust.",
+    "hero.cta1": "Browse experiences",
+    "hero.cta2": "See the map",
+    "stats.experiences": "Experiences",
+    "stats.travellers": "Happy travellers",
+    "stats.local": "Local since 2012",
+    "stats.rating": "Average rating",
+    "ex.eyebrow": "14 experiences · curated",
+    "ex.title": "Excursions worth the flight.",
+    "ex.sub": "Hand-picked by our team of four local agents. Pick a date, choose your option, confirm on WhatsApp — it's that simple.",
+    "filter.sea": "Sea & boats",
+    "filter.water": "Watersports",
+    "filter.land": "Land & mountain",
+    "filter.air": "From the sky",
+    "filter.family": "Family",
+    "map.eyebrow": "Departure points · live map",
+    "map.title": "Find your meeting point.",
+    "map.sub": "Every experience starts somewhere beautiful. Tap any pin to see the tour and get directions.",
+    "map.legend.title": "Tenerife · satellite",
+    "map.legend.text": "Our experiences depart from south Tenerife — Costa Adeje, Los Cristianos, Las Galletas — and Puerto de la Cruz on the north coast.",
+    "why.eyebrow": "The Ticket Box difference",
+    "why.title": "Built by locals.<br>Run with care.",
+    "why.1.t": "Real local expertise",
+    "why.1.p": "Born and raised in Tenerife, our four agents know every cove, viewpoint and the best time to spot wildlife.",
+    "why.2.t": "Safety, always",
+    "why.2.p": "Every captain, pilot and guide is fully licensed. We carry full insurance and follow strict safety protocols on every trip.",
+    "why.3.t": "Easy WhatsApp booking",
+    "why.3.p": "Reserve in seconds, get instant confirmation on WhatsApp. Personal service in 4 languages, every day of the year.",
+    "car.eyebrow": "Explore freely",
+    "car.title": "Rent a car. See more.",
+    "car.sub": "Discover the island on your own terms with our modern, well-maintained fleet — managed personally by our team.",
+    "car.from": "From",
+    "car.day": "/ day",
+    "car.cta": "Reserve on WhatsApp",
+    "testi.eyebrow": "Real stories · real adventures",
+    "testi.title": "Loved by travellers, worldwide.",
+    "testi.1.q": "\"The whale-watching tour exceeded all expectations. The team picked the perfect day and we saw dozens of dolphins. Truly unforgettable.\"",
+    "testi.2.q": "\"Our paragliding tandem flight was the highlight of our honeymoon. Professional, safe and breathtaking views over the coast.\"",
+    "testi.3.q": "\"Stargazing at Teide was magical. They know the best spots and made us feel like we were the only ones on the mountain. Five stars.\"",
+    "foot.about": "Premium excursions and watersports in Tenerife. Personally run by Angelo and his team of local agents who know every corner of this island.",
+    "foot.brand.tag": "Angelos agent · since 2012",
+    "foot.explore": "Explore",
+    "foot.contact": "Contact",
+    "foot.contact.lead": "Speak directly to Angelo",
+    "foot.legal": "Legal",
+    "foot.terms": "Terms",
+    "foot.privacy": "Privacy",
+    "foot.cookies": "Cookies",
+    "foot.reviews": "Reviews",
+    "foot.made": "Made with care in Tenerife · for travellers who deserve the best",
+    "modal.eyebrow": "Book your adventure",
+    "modal.option": "Choose your option",
+    "modal.date": "Preferred date",
+    "modal.people": "Number of participants",
+    "modal.total": "Estimated total",
+    "modal.note": "Includes taxes · personal confirmation on WhatsApp",
+    "modal.confirm": "Confirm via WhatsApp",
+    "modal.footnote": "You'll receive availability and instructions on WhatsApp within minutes.",
+    "modal.from": "From",
+    "modal.startPoint": "Departure"
+  },
+  fr: {
+    "brand": "Ticket Box Villamar",
+    "brand.agent": "Agent Angelos",
+    "nav.excursions": "Excursions",
+    "nav.map": "Carte",
+    "nav.why": "Pourquoi nous",
+    "nav.car": "Location voiture",
+    "nav.contact": "Contact",
+    "nav.cta": "Réserver sur WhatsApp",
+    "hero.eyebrow": "Disponible aujourd'hui · 4,9 ★ pour 2 847 voyageurs",
+    "hero.title1": "L'île du",
+    "hero.title2": "printemps éternel",
+    "hero.title3": "comme vous l'aimez.",
+    "hero.sub": "Excursions, sports nautiques et expériences privées à Tenerife, sélectionnés à la main — réservez en quelques secondes, confirmé sur WhatsApp, par une équipe locale en qui vous avez confiance.",
+    "hero.cta1": "Voir les expériences",
+    "hero.cta2": "Voir la carte",
+    "stats.experiences": "Expériences",
+    "stats.travellers": "Voyageurs ravis",
+    "stats.local": "Locaux depuis 2012",
+    "stats.rating": "Note moyenne",
+    "ex.eyebrow": "14 expériences · sélectionnées",
+    "ex.title": "Des excursions qui valent le voyage.",
+    "ex.sub": "Sélectionnées par notre équipe de quatre agents locaux. Choisissez une date et une option, confirmez sur WhatsApp — c'est aussi simple que ça.",
+    "filter.sea": "Mer & bateaux",
+    "filter.water": "Sports nautiques",
+    "filter.land": "Terre & montagne",
+    "filter.air": "Vue du ciel",
+    "filter.family": "Famille",
+    "map.eyebrow": "Points de départ · carte en direct",
+    "map.title": "Trouvez votre point de rendez-vous.",
+    "map.sub": "Chaque expérience commence quelque part de beau. Cliquez sur un repère pour voir le tour et obtenir l'itinéraire.",
+    "map.legend.title": "Tenerife · satellite",
+    "map.legend.text": "Nos expériences partent du sud — Costa Adeje, Los Cristianos, Las Galletas — et de Puerto de la Cruz sur la côte nord.",
+    "why.eyebrow": "La différence Ticket Box",
+    "why.title": "Conçu par des locaux.<br>Géré avec soin.",
+    "why.1.t": "Une vraie expertise locale",
+    "why.1.p": "Nés et élevés à Tenerife, nos quatre agents connaissent chaque crique, chaque point de vue et le meilleur moment pour observer la faune.",
+    "why.2.t": "Sécurité, toujours",
+    "why.2.p": "Chaque capitaine, pilote et guide est diplômé. Nous sommes intégralement assurés et suivons des protocoles stricts.",
+    "why.3.t": "Réservation simple sur WhatsApp",
+    "why.3.p": "Réservez en quelques secondes et recevez une confirmation immédiate sur WhatsApp. Service personnalisé en 4 langues, tous les jours de l'année.",
+    "car.eyebrow": "Explorez librement",
+    "car.title": "Louez une voiture. Voyez plus.",
+    "car.sub": "Découvrez l'île à votre rythme avec notre flotte moderne et bien entretenue — gérée personnellement par notre équipe.",
+    "car.from": "À partir de",
+    "car.day": "/ jour",
+    "car.cta": "Réserver sur WhatsApp",
+    "testi.eyebrow": "Vraies histoires · vraies aventures",
+    "testi.title": "Adoré par les voyageurs du monde entier.",
+    "testi.1.q": "\"L'observation des baleines a dépassé toutes nos attentes. L'équipe a choisi le jour parfait et nous avons vu des dizaines de dauphins. Inoubliable.\"",
+    "testi.2.q": "\"Notre vol en parapente tandem a été le moment fort de notre lune de miel. Pro, sûr et des vues à couper le souffle.\"",
+    "testi.3.q": "\"L'observation des étoiles au Teide était magique. Ils connaissent les meilleurs spots et nous nous sentions seuls sur la montagne. Cinq étoiles.\"",
+    "foot.about": "Excursions et sports nautiques de qualité à Tenerife. Géré personnellement par Angelo et son équipe d'agents locaux qui connaissent chaque recoin de cette île.",
+    "foot.brand.tag": "Agent Angelos · depuis 2012",
+    "foot.explore": "Explorer",
+    "foot.contact": "Contact",
+    "foot.contact.lead": "Parlez directement à Angelo",
+    "foot.legal": "Légal",
+    "foot.terms": "CGV",
+    "foot.privacy": "Confidentialité",
+    "foot.cookies": "Cookies",
+    "foot.reviews": "Avis",
+    "foot.made": "Fait avec soin à Tenerife · pour les voyageurs qui méritent le meilleur",
+    "modal.eyebrow": "Réservez votre aventure",
+    "modal.option": "Choisissez votre option",
+    "modal.date": "Date souhaitée",
+    "modal.people": "Nombre de participants",
+    "modal.total": "Total estimé",
+    "modal.note": "Taxes incluses · confirmation personnelle sur WhatsApp",
+    "modal.confirm": "Confirmer sur WhatsApp",
+    "modal.footnote": "Vous recevrez la disponibilité et les instructions sur WhatsApp en quelques minutes.",
+    "modal.from": "À partir de",
+    "modal.startPoint": "Départ"
+  },
+  es: {
+    "brand": "Ticket Box Villamar",
+    "brand.agent": "Agente de Angelo",
+    "nav.excursions": "Excursiones",
+    "nav.map": "Mapa",
+    "nav.why": "Por qué nosotros",
+    "nav.car": "Alquiler de coches",
+    "nav.contact": "Contacto",
+    "nav.cta": "Reservar por WhatsApp",
+    "hero.eyebrow": "Disponible hoy · 4,9 ★ de 2.847 viajeros",
+    "hero.title1": "La isla de la",
+    "hero.title2": "primavera eterna",
+    "hero.title3": "a tu manera.",
+    "hero.sub": "Excursiones seleccionadas, deportes acuáticos y experiencias privadas en Tenerife — reserva en segundos, confirma por WhatsApp, con un equipo local de confianza.",
+    "hero.cta1": "Ver experiencias",
+    "hero.cta2": "Ver el mapa",
+    "stats.experiences": "Experiencias",
+    "stats.travellers": "Viajeros felices",
+    "stats.local": "Locales desde 2012",
+    "stats.rating": "Valoración media",
+    "ex.eyebrow": "14 experiencias · seleccionadas",
+    "ex.title": "Excursiones que merecen el vuelo.",
+    "ex.sub": "Seleccionadas por nuestro equipo de cuatro agentes locales. Elige fecha y opción, confirma por WhatsApp — así de simple.",
+    "filter.sea": "Mar y barcos",
+    "filter.water": "Deportes acuáticos",
+    "filter.land": "Tierra y montaña",
+    "filter.air": "Desde el cielo",
+    "filter.family": "Familia",
+    "map.eyebrow": "Puntos de partida · mapa en vivo",
+    "map.title": "Encuentra tu punto de encuentro.",
+    "map.sub": "Cada experiencia comienza en un lugar bonito. Pulsa cualquier marcador para ver el tour y cómo llegar.",
+    "map.legend.title": "Tenerife · satélite",
+    "map.legend.text": "Nuestras experiencias salen del sur de Tenerife — Costa Adeje, Los Cristianos, Las Galletas — y de Puerto de la Cruz en el norte.",
+    "why.eyebrow": "La diferencia Ticket Box",
+    "why.title": "Hecho por locales.<br>Gestionado con cariño.",
+    "why.1.t": "Verdadera experiencia local",
+    "why.1.p": "Nacidos y criados en Tenerife, nuestros cuatro agentes conocen cada cala, cada mirador y el mejor momento para ver fauna.",
+    "why.2.t": "Seguridad, siempre",
+    "why.2.p": "Todos nuestros capitanes, pilotos y guías están totalmente titulados. Llevamos seguro completo y seguimos protocolos estrictos.",
+    "why.3.t": "Reserva fácil por WhatsApp",
+    "why.3.p": "Reserva en segundos y recibe confirmación inmediata por WhatsApp. Atención personal en 4 idiomas, todos los días del año.",
+    "car.eyebrow": "Explora libremente",
+    "car.title": "Alquila un coche. Ve más.",
+    "car.sub": "Descubre la isla a tu manera con nuestra flota moderna y bien mantenida — gestionada personalmente por nuestro equipo.",
+    "car.from": "Desde",
+    "car.day": "/ día",
+    "car.cta": "Reservar por WhatsApp",
+    "testi.eyebrow": "Historias reales · aventuras reales",
+    "testi.title": "Adorado por viajeros de todo el mundo.",
+    "testi.1.q": "\"El avistamiento de ballenas superó todas las expectativas. El equipo eligió el día perfecto y vimos docenas de delfines. Inolvidable.\"",
+    "testi.2.q": "\"Nuestro vuelo en parapente tándem fue lo mejor de la luna de miel. Profesionales, seguros y unas vistas increíbles.\"",
+    "testi.3.q": "\"La observación de estrellas en el Teide fue mágica. Conocen los mejores lugares. Cinco estrellas.\"",
+    "foot.about": "Excursiones y deportes acuáticos premium en Tenerife. Gestionado personalmente por Angelo y su equipo de agentes locales que conocen cada rincón de esta isla.",
+    "foot.brand.tag": "Agente de Angelo · desde 2012",
+    "foot.explore": "Explorar",
+    "foot.contact": "Contacto",
+    "foot.contact.lead": "Habla directamente con Angelo",
+    "foot.legal": "Legal",
+    "foot.terms": "Términos",
+    "foot.privacy": "Privacidad",
+    "foot.cookies": "Cookies",
+    "foot.reviews": "Opiniones",
+    "foot.made": "Hecho con cariño en Tenerife · para viajeros que merecen lo mejor",
+    "modal.eyebrow": "Reserva tu aventura",
+    "modal.option": "Elige tu opción",
+    "modal.date": "Fecha preferida",
+    "modal.people": "Número de participantes",
+    "modal.total": "Total estimado",
+    "modal.note": "Impuestos incluidos · confirmación personal por WhatsApp",
+    "modal.confirm": "Confirmar por WhatsApp",
+    "modal.footnote": "Recibirás disponibilidad e instrucciones por WhatsApp en minutos.",
+    "modal.from": "Desde",
+    "modal.startPoint": "Salida"
+  }
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let currentLang = 'en';
+let currentFilter = 'all';
+let currentExcursion = null;
+let currentOptionIdx = 0;
+
+/* ============================================================
+   I18N RENDER
+   ============================================================ */
+function applyLang(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const txt = I18N[lang]?.[key];
+    if (txt !== undefined) el.innerHTML = txt;
+  });
+  document.querySelectorAll('.lang-switch button').forEach(b =>
+    b.classList.toggle('active', b.getAttribute('data-lang') === lang)
+  );
+  renderExcursions();
+}
+document.querySelectorAll('.lang-switch button').forEach(b =>
+  b.addEventListener('click', () => applyLang(b.getAttribute('data-lang')))
+);
+
+/* ============================================================
+   EXCURSIONS GRID
+   ============================================================ */
+function renderExcursions() {
+  const grid = document.getElementById('excursionsGrid');
+  grid.innerHTML = '';
+  EXCURSIONS
+    .filter(e => currentFilter === 'all' || e.cat === currentFilter)
+    .forEach((e, idx) => {
+      const realOpts = e.options.filter(o => !o.addon && !o.quote);
+      const minPrice = realOpts.length ? Math.min(...realOpts.map(o => o.price)) : null;
+      const card = document.createElement('article');
+      card.className = 'ex-card reveal';
+      card.style.animationDelay = (idx * 0.06) + 's';
+      const badgeHtml = e.badge ? `<div class="ex-badge">${e.badge[currentLang]}</div>` : '';
+      card.innerHTML = `
+        <div class="ex-img">
+          ${badgeHtml}
+          <button class="ex-fav" aria-label="Save"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></button>
+          <img src="${e.img}" alt="${e.title[currentLang]}" loading="lazy">
+        </div>
+        <div class="ex-body">
+          <div class="ex-meta">
+            <span>${e.duration[currentLang]}</span>
+            <span class="sep"></span>
+            <span>${e.startPoint.name}</span>
+          </div>
+          <h3 class="ex-title">${e.title[currentLang]}</h3>
+          <p class="ex-desc">${e.desc[currentLang]}</p>
+          <div class="ex-foot">
+            <div>
+              <div class="ex-price-from">${I18N[currentLang]['modal.from']}</div>
+              <div class="ex-price">${minPrice}<span class="ex-price-currency">€</span></div>
+            </div>
+            <div class="ex-book-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </div>
+          </div>
+        </div>
+      `;
+      card.addEventListener('click', () => openModal(e));
+      grid.appendChild(card);
+      requestAnimationFrame(() => card.classList.add('in'));
+    });
+}
+
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.getAttribute('data-filter');
+    renderExcursions();
+  });
+});
+
+/* ============================================================
+   MODAL — booking
+   ============================================================ */
+const modal = document.getElementById('modal');
+const modalClose = document.getElementById('modalClose');
+
+function openModal(ex) {
+  currentExcursion = ex;
+  currentOptionIdx = 0;
+  document.getElementById('modalTitle').textContent = ex.title[currentLang];
+  document.getElementById('modalHero').src = ex.img;
+  document.getElementById('modalHero').alt = ex.title[currentLang];
+  document.getElementById('modalMeta').innerHTML = `
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>${ex.duration[currentLang]}</span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${I18N[currentLang]['modal.startPoint']}: ${ex.startPoint.name}</span>
+  `;
+  // YouTube embed — direct video ID (no search, exact video for each tour)
+  const videoSrc = ex.videoId
+    ? `https://www.youtube-nocookie.com/embed/${ex.videoId}?modestbranding=1&rel=0&playsinline=1`
+    : `https://www.youtube-nocookie.com/embed?listType=search&list=${encodeURIComponent(ex.videoQuery || ex.title.en)}&modestbranding=1&rel=0`;
+  document.getElementById('modalVideo').src = videoSrc;
+
+  // options
+  const list = document.getElementById('optionList');
+  list.innerHTML = '';
+  // Pick first non-quote option as default selection
+  let firstSelectable = ex.options.findIndex(o => !o.quote);
+  if (firstSelectable < 0) firstSelectable = 0;
+  currentOptionIdx = firstSelectable;
+  ex.options.forEach((opt, i) => {
+    const item = document.createElement('div');
+    item.className = 'option-item' + (i === currentOptionIdx ? ' selected' : '');
+    const priceLabel = opt.quote
+      ? `<span class="option-price option-quote">${({en:'Quote',fr:'Devis',es:'A consultar'})[currentLang]}</span>`
+      : `<span class="option-price">${opt.price}€</span>`;
+    item.innerHTML = `
+      <div class="option-info">
+        <span class="option-name">${opt.name[currentLang]}</span>
+        <span class="option-desc">${opt.desc[currentLang]}</span>
+      </div>
+      ${priceLabel}
+    `;
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.option-item').forEach(x => x.classList.remove('selected'));
+      item.classList.add('selected');
+      currentOptionIdx = i;
+      updateTotal();
+    });
+    list.appendChild(item);
+  });
+
+  // date default = tomorrow
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('bookDate').valueAsDate = tomorrow;
+  document.getElementById('bookDate').min = new Date().toISOString().split('T')[0];
+
+  document.getElementById('bookQty').value = 2;
+  updateTotal();
+
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  modal.classList.remove('show');
+  document.body.style.overflow = '';
+  document.getElementById('modalVideo').src = '';
+}
+modalClose.addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+/* qty controls */
+document.getElementById('qtyMinus').addEventListener('click', () => {
+  const i = document.getElementById('bookQty');
+  i.value = Math.max(1, parseInt(i.value || 1) - 1);
+  updateTotal();
+});
+document.getElementById('qtyPlus').addEventListener('click', () => {
+  const i = document.getElementById('bookQty');
+  i.value = Math.min(20, parseInt(i.value || 1) + 1);
+  updateTotal();
+});
+document.getElementById('bookQty').addEventListener('input', updateTotal);
+
+function updateTotal() {
+  if (!currentExcursion) return;
+  const opt = currentExcursion.options[currentOptionIdx];
+  const qty = parseInt(document.getElementById('bookQty').value || 1);
+  const totalEl = document.getElementById('totalAmount');
+  if (opt.quote) {
+    totalEl.textContent = ({en:'On request', fr:'Sur devis', es:'A consultar'})[currentLang];
+  } else {
+    const total = opt.price * qty;
+    totalEl.textContent = '€' + total;
+  }
+}
+
+/* WhatsApp confirm */
+document.getElementById('confirmBtn').addEventListener('click', () => {
+  if (!currentExcursion) return;
+  const opt = currentExcursion.options[currentOptionIdx];
+  const qty = document.getElementById('bookQty').value;
+  const date = document.getElementById('bookDate').value;
+  const isQuote = !!opt.quote;
+
+  const greeting = {
+    en: isQuote
+      ? "Hi Angelo! I'd like a quote for:"
+      : "Hi Angelo! I'd like to book:",
+    fr: isQuote
+      ? "Bonjour Angelo ! Je souhaite un devis pour :"
+      : "Bonjour Angelo ! Je souhaite réserver :",
+    es: isQuote
+      ? "¡Hola Angelo! Me gustaría un presupuesto para:"
+      : "¡Hola Angelo! Me gustaría reservar:"
+  }[currentLang];
+
+  const labels = {
+    en: { tour: "Tour", option: "Option", date: "Date", people: "People", total: "Estimated total", start: "Departure", quote: "On request" },
+    fr: { tour: "Excursion", option: "Option", date: "Date", people: "Personnes", total: "Total estimé", start: "Départ", quote: "Sur devis" },
+    es: { tour: "Excursión", option: "Opción", date: "Fecha", people: "Personas", total: "Total estimado", start: "Salida", quote: "A consultar" }
+  }[currentLang];
+
+  const optionLine = isQuote
+    ? `*${labels.option}:* ${opt.name[currentLang]} — ${labels.quote}`
+    : `*${labels.option}:* ${opt.name[currentLang]} (${opt.price}€)`;
+  const totalLine = isQuote
+    ? `*${labels.total}:* ${labels.quote}`
+    : `*${labels.total}:* €${opt.price * parseInt(qty)}`;
+
+  const msg = [
+    greeting,
+    '',
+    `*${labels.tour}:* ${currentExcursion.title[currentLang]}`,
+    optionLine,
+    `*${labels.date}:* ${date}`,
+    `*${labels.people}:* ${qty}`,
+    `*${labels.start}:* ${currentExcursion.startPoint.name}`,
+    totalLine,
+    '',
+    currentLang === 'fr' ? 'Merci !' : currentLang === 'es' ? '¡Gracias!' : 'Thank you!'
+  ].join('\n');
+
+  const url = `https://wa.me/34635999635?text=${encodeURIComponent(msg)}`;
+  // Most reliable on mobile: navigate same window. WhatsApp handles intercept.
+  // Use a temporary anchor element to ensure mobile browsers (especially in-app
+  // browsers and Safari) trigger the universal link handler properly.
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+/* ============================================================
+   MAP — Tenerife satellite with departure pins
+   ============================================================ */
+function initMap() {
+  const map = L.map('tenerifeMap', {
+    zoomControl: true,
+    scrollWheelZoom: false
+  }).setView([28.2916, -16.6291], 10);
+
+  // Esri World Imagery — satellite
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Tiles © Esri · Maxar · Earthstar Geographics',
+    maxZoom: 18
+  }).addTo(map);
+
+  // Labels overlay (semi-transparent)
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+    opacity: 0.85,
+    maxZoom: 18
+  }).addTo(map);
+
+  // dedupe by lat/lng to avoid stacked markers
+  const seen = new Map();
+  EXCURSIONS.forEach(e => {
+    const key = `${e.startPoint.lat},${e.startPoint.lng}`;
+    if (!seen.has(key)) seen.set(key, []);
+    seen.get(key).push(e);
+  });
+
+  seen.forEach((tours, key) => {
+    const [lat, lng] = key.split(',').map(Number);
+    const icon = L.divIcon({
+      className: 'custom-marker-wrap',
+      html: '<div class="custom-marker"></div>',
+      iconSize: [18, 18],
+      iconAnchor: [9, 9]
+    });
+    const marker = L.marker([lat, lng], { icon }).addTo(map);
+    const list = tours.map(t =>
+      `<div style="margin-top:4px"><span style="color:var(--accent);">●</span> ${t.title[currentLang]}</div>`
+    ).join('');
+    marker.bindPopup(`<strong>${tours[0].startPoint.name}</strong>${list}`);
+  });
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (en.isIntersecting) {
+      en.target.classList.add('in');
+      io.unobserve(en.target);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* Boot */
+applyLang('en');
+window.addEventListener('load', initMap);
+</script>
+</body>
+</html>
